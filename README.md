@@ -48,4 +48,5 @@
    - add_cost
    - company
    - product. 
+
 8.Запустите тесты pytest test_price_predictor.py -v.
