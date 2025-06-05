@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
@@ -8,7 +7,7 @@ from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 from joblib import dump, load
 import os
-
+import matplotlib.pyplot as plt
 
 class DataLoader:
     """Класс для загрузки и подготовки данных"""
@@ -32,6 +31,28 @@ class DataLoader:
         y = self.data[target_column]
         return X, y
 
+class InputValidator:
+    @staticmethod
+    def validate_prediction_input(input_data):
+        """Валидация входных данных для прогнозирования"""
+        required_fields = ['count', 'add_cost', 'company', 'product']
+
+        if isinstance(input_data, pd.DataFrame):
+            # Проверяем DataFrame
+            missing_cols = [col for col in required_fields if col not in input_data.columns]
+            if missing_cols:
+                raise ValueError(f"Отсутствуют обязательные колонки: {', '.join(missing_cols)}")
+
+            if input_data.empty:
+                raise ValueError("DataFrame не должен быть пустым")
+        elif isinstance(input_data, dict):
+            # Проверяем словарь
+            missing_fields = [field for field in required_fields if field not in input_data]
+            if missing_fields:
+                raise ValueError(f"Отсутствуют обязательные поля: {', '.join(missing_fields)}")
+        else:
+            raise ValueError("Входные данные должны быть либо словарем, либо DataFrame")
+
 
 class DataPreprocessor:
     """Класс для предварительной обработки данных"""
@@ -49,7 +70,6 @@ class DataPreprocessor:
                 ('cat', OneHotEncoder(handle_unknown='ignore'), self.categorical_features)
             ])
         return self
-
 
 
 class PricePredictor:
@@ -109,8 +129,6 @@ class PricePredictor:
         return self
 
 
-
-
 class PredictionManager:
     """Класс для управления прогнозами"""
 
@@ -119,7 +137,9 @@ class PredictionManager:
         self.predictions = []
 
     def make_prediction(self, input_data):
-        """Создание прогноза"""
+        """Создание прогноза с валидацией входных данных"""
+        InputValidator.validate_prediction_input(input_data)
+        
         if not isinstance(input_data, pd.DataFrame):
             input_data = pd.DataFrame([input_data])
 
@@ -142,64 +162,6 @@ class PredictionManager:
             raise ValueError("Нет данных для сохранения")
         df = self.get_predictions_history()
         df.to_csv(file_path, index=False)
-
-
-
-if __name__ == "__main__":
-    try:
-        # 1. Загрузка данных
-        loader = DataLoader('csv_data.csv')
-        X, y = loader.load_from_csv().get_features_target()
-
-        # 2. Разделение данных
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-        # 3. Обучение модели
-        predictor = PricePredictor()
-        predictor.train(X_train, y_train)
-
-        # 4. Оценка модели
-        evaluation = predictor.evaluate(X_test, y_test)
-        print(f"Оценка модели: RMSE={evaluation['RMSE']:.2f}, R2={evaluation['R2']:.2f}")
-
-        # 5. Сохранение модели
-        predictor.save_model()
-
-        # 6. Пример прогнозирования
-        manager = PredictionManager(predictor)
-
-        # Прогноз 1
-        new_data_1 = {
-            'count': 5000,
-            'add_cost': 3000,
-            'company': 'Tesla',
-            'product': 'Galaxy'
-        }
-        result_1 = manager.make_prediction(new_data_1)
-        print(f"Прогноз 1: {result_1['prediction']:.2f}")
-
-        # Прогноз 2
-        new_data_2 = {
-            'count': 300,
-            'add_cost': 2000,
-            'company': 'Apple',
-            'product': 'iPad'
-        }
-        result_2 = manager.make_prediction(new_data_2)
-        print(f"Прогноз 2: {result_2['prediction']:.2f}")
-
-        # 7. Сохранение истории прогнозов
-        manager.save_predictions_to_csv('predictions_history.csv')
-
-        # 8. Загрузка модели и повторное использование
-        loaded_predictor = PricePredictor().load_model()
-        new_prediction = loaded_predictor.predict(pd.DataFrame([new_data_1]))[0]
-        print(f"Прогноз с загруженной моделью: {new_prediction:.2f}")
-
-    except Exception as e:
-        print(f"Ошибка: {str(e)}")
-
-import matplotlib.pyplot as plt
 
 
 class PredictionVisualizer:
@@ -229,111 +191,3 @@ class PredictionVisualizer:
             plt.yticks(range(len(indices)), [feature_names[i] for i in indices])
             plt.xlabel('Относительная важность')
             plt.show()
-
-
-# После обучения модели
-visualizer = PredictionVisualizer()
-
-# Визуализация прогнозов vs фактические значения
-y_pred = predictor.predict(X_test)
-visualizer.plot_predictions_vs_actual(y_test, y_pred)
-
-# Визуализация важности признаков
-# Получаем имена признаков после преобразования
-preprocessor = predictor.model.named_steps['preprocessor']
-numeric_features = preprocessor.transformers_[0][2]
-categorical_features = preprocessor.transformers_[1][2]
-cat_encoder = preprocessor.named_transformers_['cat']
-cat_feature_names = cat_encoder.get_feature_names_out(categorical_features)
-all_feature_names = numeric_features + list(cat_feature_names)
-
-visualizer.plot_feature_importance(predictor.model, all_feature_names)
-
-
-
-class InputValidator:
-    """Класс для валидации входных данных"""
-
-    @staticmethod
-    def validate_prediction_input(input_data):
-        required_fields = ['count', 'add_cost', 'company', 'product']
-        for field in required_fields:
-            if field not in input_data:
-                raise ValueError(f"Отсутствует обязательное поле: {field}")
-
-        if not isinstance(input_data['count'], int) or input_data['count'] <= 0:
-            raise ValueError("Количество должно быть положительным целым числом")
-
-        if not (isinstance(input_data['add_cost'], (int, float))) or input_data['add_cost'] < 0:
-            raise ValueError("Затраты на продвижение должны быть положительным числом")
-
-        if not isinstance(input_data['company'], str) or not input_data['company'].strip():
-            raise ValueError("Название компании должно быть непустой строкой")
-
-        if not isinstance(input_data['product'], str) or not input_data['product'].strip():
-            raise ValueError("Название продукта должно быть непустой строкой")
-
-        return True
-
-
-
-
-
-def make_prediction(self, input_data):
-    """Создание прогноза с валидацией входных данных"""
-    InputValidator.validate_prediction_input(input_data)
-
-    if not isinstance(input_data, pd.DataFrame):
-        input_data = pd.DataFrame([input_data])
-
-    prediction = self.predictor.predict(input_data)[0]
-    result = {
-        'input': input_data.iloc[0].to_dict(),
-        'prediction': prediction,
-        'timestamp': pd.Timestamp.now()
-    }
-    self.predictions.append(result)
-    return result
-
-"""
-Эта
-реализация
-демонстрирует
-чистое
-ООП
-решение
-для
-прогнозирования
-цен, включая:
-
-Загрузку
-и
-подготовку
-данных
-
-Обучение
-и
-оценку
-модели
-
-Управление
-прогнозами
-
-Визуализацию
-результатов
-
-Валидацию
-входных
-данных
-
-Каждый
-класс
-отвечает
-за
-свою
-конкретную
-задачу, что
-соответствует
-принципам
-SOLID.
-"""
