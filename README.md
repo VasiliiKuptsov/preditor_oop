@@ -43,8 +43,9 @@
   - Сохранит модель.
 7. Пример данных
   CSV-файл должен содержать:
-price  count	  add_cost   	company	   product	
-999    100	    50	         Apple	     iPhone	999
-888    200     30	         Samsung	   Galaxy	899
-
+   - price
+   - count
+   - add_cost
+   - company
+   - product	
 8.Запустите тесты pytest test_price_predictor.py -v.
