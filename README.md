@@ -47,5 +47,5 @@
    - count
    - add_cost
    - company
-   - product	
+   - product.	
 8.Запустите тесты pytest test_price_predictor.py -v.
