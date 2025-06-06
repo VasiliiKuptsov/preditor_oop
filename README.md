@@ -6,11 +6,12 @@
 
   - DataLoader - загружает данные из CSV.
   - PricePredictor - обучает модель и делает прогнозы.
-  - PredictionManager - управляет прогнозами
+  - PredictionManager - управляет прогнозами.
   -InputValidator - проверяет входные данные.
 
 2. Как данные попадают в систему.
- DataLoader загружает CSV-файл
+
+ DataLoader загружает CSV-файл.
 get_features_target() разделяет данные на:
   - X (признаки): count, add_cost, company, product.
   - y (целевая переменная): price.
