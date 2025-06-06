@@ -12,8 +12,8 @@
 
 2. Как данные попадают в систему.
 
- DataLoader загружает CSV-файл.
- get_features_target() разделяет данные на:
+ DataLoader загружает CSV-файл
+ .get_features_target() и разделяет данные на:
   - X (признаки): count, add_cost, company, product.
   - y (целевая переменная): price.
 
