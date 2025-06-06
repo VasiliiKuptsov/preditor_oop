@@ -8,6 +8,7 @@
   - PricePredictor - обучает модель и делает прогнозы.
   - PredictionManager - управляет прогнозами.
   - InputValidator - проверяет входные данные.
+    
 
 2. Как данные попадают в систему.
  DataLoader загружает CSV-файл.
