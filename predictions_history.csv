@@ -1,3 +1,3 @@
 input,prediction,timestamp
-"{'count': 700, 'add_cost': 3000, 'company': 'Apple', 'product': 'iPad'}",54832.98325648705,2025-06-05 10:37:51.524625
-"{'count': 700, 'add_cost': 300, 'company': 'Google', 'product': 'Xbox'}",54928.300427979724,2025-06-05 10:37:51.531627
+"{'count': 90, 'add_cost': 75, 'company': 'HomeSystems', 'product': 'Smart TV 43'}",523.4374562774375,2025-06-06 23:27:51.505505
+"{'count': 100, 'add_cost': 100, 'company': 'ElectroTech', 'product': 'Smartphone X205'}",727.2792979607422,2025-06-06 23:27:51.512507

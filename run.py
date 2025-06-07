@@ -7,11 +7,12 @@ import os
 if __name__ == "__main__":
     try:
         # 1. Загрузка данных
-        loader = DataLoader('csv_data.csv')
+        loader = DataLoader('product_prices_10k.csv')
         X, y = loader.load_from_csv().get_features_target()
 
         # 2. Разделение данных
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
 
         # 3. Обучение модели
         predictor = PricePredictor()
@@ -29,20 +30,20 @@ if __name__ == "__main__":
 
         # Прогноз 1
         new_data_1 = {
-            'count': 700,
-            'add_cost': 3000,
-            'company': 'Apple',
-            'product': 'iPad'
+            'count': 90,
+            'add_cost': 75,
+            'company': 'HomeSystems',
+            'product': 'Smart TV 43'
         }
         result_1 = manager.make_prediction(new_data_1)
         print(f"Прогноз 1: {result_1['prediction']:.2f}")
 
         # Прогноз 2
         new_data_2 = {
-            'count': 700,
-            'add_cost': 300,
-            'company': 'Google',
-            'product': 'Xbox'
+            'count': 100,
+            'add_cost': 100,
+            'company': 'ElectroTech',
+            'product': 'Smartphone X205'
         }
         result_2 = manager.make_prediction(new_data_2)
         print(f"Прогноз 2: {result_2['prediction']:.2f}")
